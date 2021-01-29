@@ -1,0 +1,12 @@
+{
+    "name": "@ijstech/site",
+    "description": "Site plugin",
+    "version": "0.0.1",
+    "dependencies": {},
+    "author": "https://ijs.network",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ijstech/site"
+    }
+}
