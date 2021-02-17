@@ -1,7 +1,7 @@
 {
     "name": "@ijstech/site",
-    "description": "Site plugin",
-    "version": "0.0.1",
+    "description": "Site Plugin for IJS Secure Node",
+    "version": "0.1.0",
     "dependencies": {},
     "author": "https://ijs.network",
     "license": "MIT",
