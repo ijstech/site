@@ -1,2 +1,2 @@
 # @ijstech/site
-Site plugin for [Secure Application Server](https://github.com/ijstech/app-server)
+Site plugin for [IJS Secure Node Server](https://github.com/ijstech/node)
