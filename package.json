@@ -1,11 +1,11 @@
 {
     "name": "@ijstech/site",
     "description": "Site Plugin for IJS Secure Node",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "dependencies": {
         "path-to-regexp": "6.2.0",
         "@ijstech/log": "^0.1.0",
-        "@ijstech/module": "^0.1.4"
+        "@ijstech/module": "^0.1.8"
     },
     "author": "https://ijs.network",
     "license": "MIT",

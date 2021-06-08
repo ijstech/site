@@ -40,11 +40,11 @@ function parseUrl(regex, url){
         return result;
     }
 }
-async function updateEndpoints(site, packname){        
+async function updateEndpoints(site, packname){
     site.package = site.package || {};
     site.routes = site.routes || {};        
     let package = site.package[packname];    
-    if (package.liveUpdate || !package.loaded){                
+    if (package.liveUpdate || !package.loaded){
         let pack;
         let packPath;
         if (package.liveUpdate){
@@ -55,8 +55,8 @@ async function updateEndpoints(site, packname){
                 };                
             };            
         }
-        else {
-            pack = Module.getLocalPackage(packname);    
+        else {            
+            pack = Module.getLocalPackage(packname);
             if (pack){
                 packPath = pack.rootPath;            
                 if (pack.default){                     
@@ -71,14 +71,11 @@ async function updateEndpoints(site, packname){
                 }
                 if (pack._routes){
                     let routes = await pack._routes(site, package);
-                    if (Array.isArray(routes)){
-                        site.routes['GET'] = site.routes['GET'] || {};
-                        for (let i = 0; i < routes.length; i ++){
-                            let route = routes[i];
-                            site.routes['GET'][route.name] = {
-                                id: route.guid,
-                                type: 'page'
-                            }
+                    for (let m in routes){                        
+                        site.routes[m] = site.routes[m] || {};
+                        for (let r in routes[m]){
+                            if (!site.routes[m][r])
+                                site.routes[m][r] = routes[m][r]
                         }
                     }
                 }
@@ -90,8 +87,7 @@ async function updateEndpoints(site, packname){
                 id: package.id,
                 orgId: package.orgId,
                 liveUpdate: package.liveUpdate,
-                name: packname,
-                // middleware: clone(pack.middleware),                
+                name: packname,                
                 db: clone(package.db || site.db || [])
             };
             if (Array.isArray(pack.require)){
@@ -105,32 +101,39 @@ async function updateEndpoints(site, packname){
                 else{
                     site.routes[m] = site.routes[m] || {};
                     for (let r in pack.routes[m]){
-                        let route = clone(pack.routes[m][r]);
+                        let route = clone(pack.routes[m][r]);                        
                         route.package = packInfo;
                         if (!package.liveUpdate)
-                            route.scriptPath = resolveFullPath(packPath, route.scriptPath);
+                            route.scriptPath = Module.resolveFullPath(packPath, route.scriptPath);
                             
                         site.routes[m][r] = route;
                     };
                 };
             };
+            site.menus = site.menus || {};
+            for (let m in pack.menus){                                                        
+                site.menus[m] = clone(pack.menus[m]);
+            }; 
             site.modules = site.modules || {};
             for (let m in pack.modules){
-                site.modules[m.toLowerCase()] = pack.modules[m];
+                let module = clone(pack.modules[m]);
+                module.orgId = package.orgId;
+                site.modules[m.toLowerCase()] = module;
             };
         };
     };
 };
-async function getEndpoint(ctx, site){
+async function getEndpoint(ctx, site){    
     if (ctx.endpoint)
         return ctx.endpoint;
 
     for (let p in site.package)
         await updateEndpoints(site, p);    
-    if (site.routes && site.routes[ctx.method]){                
+    
+    if (site.routes && site.routes[ctx.method]){                        
         let root = site.routes.root || '';        
-        let routes = site.routes[ctx.method];        
-        if (routes){                                    
+        let routes = site.routes[ctx.method];
+        if (routes){
             for (let v in routes){                
                 let endpoint = parseUrl(root + v, ctx.path);
                 if (endpoint){
@@ -147,7 +150,7 @@ async function getEndpoint(ctx, site){
                         for (let q in ctx.query)
                             endpoint.params[q] = ctx.query[q];
                     };
-                    if (route.type != 'page'){
+                    if (!route.type){
                         if (route._middleware == undefined){                        
                             let _middleware = route.middleware || [];
                             let package = route.package;
@@ -225,6 +228,9 @@ async function getEndpoint(ctx, site){
         };
     };
 };
+function getMenu(ctx, site){
+    return site.menus;
+}
 function getSite(hostname){
     return Sites[hostname.toLowerCase()]
 };
@@ -250,7 +256,7 @@ async function _middleware(ctx, next, options){
                     return;
                 };
             };
-            ctx.site = site;
+            ctx.site = site;            
             let endpoint = await getEndpoint(ctx, site);
             if (endpoint){                
                 if (endpoint.acl && !endpoint.acl.public && ctx.session && !ctx.session.account){
@@ -301,5 +307,6 @@ module.exports = {
     },
     _middleware: _middleware,
     getSite: getSite,
+    getMenu: getMenu,
     getEndpoint: getEndpoint    
 }
